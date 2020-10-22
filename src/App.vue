@@ -33,6 +33,7 @@
             v-model="curEdit.text"
             @keyup.enter="confirmEdit(item)"
             @keyup.esc="cancelEdit(item)"
+            v-edit-focus="item === curEdit.item"
           />
         </li>
       </ul>
@@ -140,6 +141,13 @@ export default {
       removeItem,
       ...useEditItem(removeItem),
     };
+  },
+  directives: {
+    editFocus(el,{value}) {
+      if(value){
+        el.focus();
+      }
+    },
   },
 };
 </script>
