@@ -49,3 +49,4 @@ footer
 
 - filter 被废弃了        
 - [ ] lodash 按需引入
+- [ ] 支持自动部署，比如vercel
