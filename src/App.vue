@@ -60,15 +60,25 @@
           }}</a>
         </li>
       </ul>
-      <button class="clear-completed" @click="clearCompleted">Clear completed</button>
+      <button class="clear-completed" @click="clearCompleted">
+        Clear completed
+      </button>
     </footer>
   </section>
 </template>
 
 <script>
 import "./assets/css/index.css";
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watchEffect,
+} from "vue";
 import { capitalize } from "lodash";
+import { getStorage, setStorage } from "./utils/localStorage";
 
 function useAddItem(todos) {
   const input = ref("");
@@ -181,23 +191,37 @@ function useFilter(items, remove) {
     filters.completed(items.value).forEach((item) => remove(item));
   }
 }
-
+function usePersist(key) {
+  return {
+    val: getStorage(key),
+    watch(refObj) {
+      watchEffect(() => {
+        setStorage(key, refObj.value);
+      });
+    },
+  };
+}
 export default {
   name: "App",
   setup() {
-    const todos = ref([
-      { text: "Learn Elm Architecture", complete: false },
-      { text: "Build Todo List App", complete: false },
-      { text: "Win the Internet!", complete: false },
-    ]);
+    const todosPersist = usePersist("todos");
+    const todos = ref(
+      validTodos(todosPersist.val) || [
+        { text: "Learn Elm Architecture", complete: false },
+        { text: "Build Todo List App", complete: false },
+        { text: "Win the Internet!", complete: false },
+      ]
+    );
+    todosPersist.watch(todos);
     const { removeItem } = useRemoveItem(todos);
+
     return {
       todos,
       ...useAddItem(todos),
       removeItem,
       ...useEditItem(removeItem),
       ...useCheckAll(todos),
-      ...useFilter(todos,removeItem),
+      ...useFilter(todos, removeItem),
     };
   },
   filters: {
@@ -211,5 +235,13 @@ export default {
     },
   },
 };
+function validTodos(todos) {
+  if (!Array.isArray(todos)) return false;
+  if (todos.length === 0) return todos;
+  if ("text" in todos[0]) {
+    return todos;
+  }
+  return false;
+}
 </script>
  
