@@ -5,13 +5,27 @@
       <input
         id="newTodo"
         class="new-todo"
+        v-model="input"
         placeholder="What needs to be done?"
+        @keyup.enter="addItem"
+        autofocus
       />
     </header>
     <section class="main" style="display: block">
       <input class="toggle-all" type="checkbox" />
       <label for="toggle-all">Mark all as complete</label>
       <ul class="todo-list">
+        <li
+          v-for="item of todos"
+          :key="item"
+          :class="{ completed: item.completed }"
+        >
+          <div class="view">
+            <input class="toggle" type="checkbox" v-model="item.completed" />
+            <label>{{ item.text }}</label>
+            <button class="destroy"></button>
+          </div>
+        </li>
         <li data-id="1533501855500" class="completed">
           <div class="view">
             <input class="toggle" type="checkbox" />
@@ -67,8 +81,31 @@
 
 <script>
 import "./assets/css/index.css";
+import { ref } from "vue";
+
+function useAddItem(todos) {
+  const input = ref("");
+  function addItem() {
+    if (input.value) {
+      todos.value.push({
+        complete: false,
+        text: input.value,
+      });
+      input.value = "";
+    }
+  }
+  return { input, addItem };
+}
+
 export default {
   name: "App",
+  setup() {
+    const todos = ref([]);
+    return {
+      todos,
+      ...useAddItem(todos),
+    };
+  },
 };
 </script>
  
