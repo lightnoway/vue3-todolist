@@ -50,8 +50,8 @@
         ><strong id="todoCount">0</strong> item left</span
       >
       <ul class="filters">
-        <li v-for="item of filterTypes" :key="item">
-          <a :class="{selected:item===filterCur}" :href="`#/${item}`">{{ item }}</a>
+        <li v-for="(item,i) of filterTypes" :key="item">
+          <a :class="{selected:item===filterCur}" :href="`#/${item}`">{{ filterTypesC[i] }}</a>
         </li>
       </ul>
       <button class="clear-completed" id="btnClear">Clear completed</button>
@@ -62,6 +62,7 @@
 <script>
 import "./assets/css/index.css";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import {capitalize} from 'lodash';
 
 function useAddItem(todos) {
   const input = ref("");
@@ -161,6 +162,7 @@ function useFilter(items) {
     filteredItems,
     filterCur: current,
     filterTypes,
+    filterTypesC:filterTypes.map(capitalize)
   };
 }
 
@@ -181,6 +183,9 @@ export default {
       ...useCheckAll(todos),
       ...useFilter(todos),
     };
+  },
+  filters:{
+    capitalize
   },
   directives: {
     editFocus(el, { value }) {

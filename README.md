@@ -45,3 +45,7 @@ footer
     - javascript-todo-list-tutorial  
         - yarn add 失败： npm test
         - 手动复制样式，模板
+
+
+- filter 被废弃了        
+- [ ] lodash 按需引入
