@@ -23,7 +23,7 @@
           <div class="view">
             <input class="toggle" type="checkbox" v-model="item.completed" />
             <label>{{ item.text }}</label>
-            <button class="destroy"></button>
+            <button class="destroy" @click="removeItem(item)"></button>
           </div>
         </li>
         <li data-id="1533501855500" class="completed">
@@ -39,6 +39,7 @@
             <label>Build Todo List App</label>
             <button class="destroy"></button>
           </div>
+          
         </li>
         <li data-id="1533501867123" class="">
           <div class="view">
@@ -96,14 +97,27 @@ function useAddItem(todos) {
   }
   return { input, addItem };
 }
+function useRemoveItem(list) {
+  return {
+    removeItem,
+  };
+  function removeItem(item) {
+    const index = list.value.indexOf(item);
+    if (index > -1) {
+      list.value.splice(index, 1);
+    }
+  }
+}
 
 export default {
   name: "App",
   setup() {
     const todos = ref([]);
+    const { removeItem } = useRemoveItem(todos);
     return {
       todos,
       ...useAddItem(todos),
+      removeItem,
     };
   },
 };
