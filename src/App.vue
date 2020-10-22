@@ -12,8 +12,8 @@
       />
     </header>
     <section class="main" style="display: block">
-      <input class="toggle-all" type="checkbox" />
-      <label for="toggle-all">Mark all as complete</label>
+      <input id="toggle-all" class="toggle-all" type="checkbox" v-model="checkAll" />
+      <label for="toggle-all">Mark all as {{!checkAll? "complete":"uncomplete"}}</label>
       <ul class="todo-list">
         <li
           v-for="item of todos"
@@ -70,7 +70,7 @@
 
 <script>
 import "./assets/css/index.css";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
 function useAddItem(todos) {
   const input = ref("");
@@ -126,6 +126,18 @@ function useEditItem(remove) {
   }
 }
 
+function useCheckAll(items) {
+  const checkAll = computed({
+    get() {
+      return items.value.length > 0 && items.value.every((item) => item.completed);
+    },
+    set(val) {
+      items.value.forEach((item) => (item.completed = val));
+    },
+  });
+  return { checkAll };
+}
+
 export default {
   name: "App",
   setup() {
@@ -140,11 +152,12 @@ export default {
       ...useAddItem(todos),
       removeItem,
       ...useEditItem(removeItem),
+      ...useCheckAll(todos)
     };
   },
   directives: {
-    editFocus(el,{value}) {
-      if(value){
+    editFocus(el, { value }) {
+      if (value) {
         el.focus();
       }
     },
