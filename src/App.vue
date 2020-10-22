@@ -60,7 +60,7 @@
           }}</a>
         </li>
       </ul>
-      <button class="clear-completed" @click="clearCompleted">
+      <button class="clear-completed" @click="clearCompleted" v-show="leftCount>0">
         Clear completed
       </button>
     </footer>
@@ -164,6 +164,7 @@ function useFilter(items, remove) {
 
   onMounted(() => {
     window.addEventListener("hashchange", setCurrent);
+    setCurrent();
   });
   onUnmounted(() => {
     window.removeEventListener("hashchange", setCurrent);

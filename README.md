@@ -1,7 +1,7 @@
 
 
 ## 需求及说明
-[页面展示](https://todomvc-app.herokuapp.com/)
+页面展示 [参考效果](https://todomvc-app.herokuapp.com/)
 - 新增todo 输入框
     - 回车新增todo
 - todoList header
