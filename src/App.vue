@@ -23,7 +23,7 @@
       >
       <ul class="todo-list">
         <li
-          v-for="item of todos"
+          v-for="item of filteredItems"
           :key="item"
           :class="{
             completed: item.completed,
@@ -40,6 +40,7 @@
             v-model="curEdit.text"
             @keyup.enter="confirmEdit(item)"
             @keyup.esc="cancelEdit(item)"
+            @blur="cancelEdit(item)"
             v-edit-focus="item === curEdit.item"
           />
         </li>
@@ -47,14 +48,19 @@
     </section>
     <footer class="footer">
       <span class="todo-count"
-        ><strong id="todoCount">0</strong> item left</span
+        ><strong id="todoCount">{{ leftCount }}</strong> item{{
+          leftCount > 0 ? "s" : ""
+        }}
+        left</span
       >
       <ul class="filters">
-        <li v-for="(item,i) of filterTypes" :key="item">
-          <a :class="{selected:item===filterCur}" :href="`#/${item}`">{{ filterTypesC[i] }}</a>
+        <li v-for="(item, i) of filterTypes" :key="item">
+          <a :class="{ selected: item === filterCur }" :href="`#/${item}`">{{
+            filterTypesC[i]
+          }}</a>
         </li>
       </ul>
-      <button class="clear-completed" id="btnClear">Clear completed</button>
+      <button class="clear-completed" @click="clearCompleted">Clear completed</button>
     </footer>
   </section>
 </template>
@@ -62,7 +68,7 @@
 <script>
 import "./assets/css/index.css";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import {capitalize} from 'lodash';
+import { capitalize } from "lodash";
 
 function useAddItem(todos) {
   const input = ref("");
@@ -131,26 +137,21 @@ function useCheckAll(items) {
   });
   return { checkAll };
 }
-function useFilter(items) {
+function useFilter(items, remove) {
   const current = ref("all");
   const filters = {
     all: (items) => items,
     active: (items) => items.filter((item) => !item.completed),
-    completed: (items) => items.filter((item) => !item.completed),
+    completed: (items) => items.filter((item) => item.completed),
   };
   const filterTypes = Object.keys(filters);
   const filteredItems = computed(function () {
-    return filters[current](items);
+    return filters[current.value](items.value);
   });
-  function setCurrent() {
-    const hash = location.hash.slice(2);
-    if (filters[hash]) {
-      current.value = hash;
-    } else {
-      current.value = filterTypes[0];
-      location.hash = current.value;
-    }
-  }
+  const leftCount = computed(function () {
+    return filters.active(items.value).length;
+  });
+
   onMounted(() => {
     window.addEventListener("hashchange", setCurrent);
   });
@@ -162,8 +163,23 @@ function useFilter(items) {
     filteredItems,
     filterCur: current,
     filterTypes,
-    filterTypesC:filterTypes.map(capitalize)
+    filterTypesC: filterTypes.map(capitalize),
+    leftCount,
+    clearCompleted,
   };
+  /** function 放下边 */
+  function setCurrent() {
+    const hash = location.hash.slice(2);
+    if (filters[hash]) {
+      current.value = hash;
+    } else {
+      current.value = filterTypes[0];
+      location.hash = current.value;
+    }
+  }
+  function clearCompleted() {
+    filters.completed(items.value).forEach((item) => remove(item));
+  }
 }
 
 export default {
@@ -181,11 +197,11 @@ export default {
       removeItem,
       ...useEditItem(removeItem),
       ...useCheckAll(todos),
-      ...useFilter(todos),
+      ...useFilter(todos,removeItem),
     };
   },
-  filters:{
-    capitalize
+  filters: {
+    capitalize,
   },
   directives: {
     editFocus(el, { value }) {
