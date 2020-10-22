@@ -18,35 +18,22 @@
         <li
           v-for="item of todos"
           :key="item"
-          :class="{ completed: item.completed }"
+          :class="{
+            completed: item.completed,
+            editing: item === curEdit.item,
+          }"
         >
           <div class="view">
             <input class="toggle" type="checkbox" v-model="item.completed" />
-            <label>{{ item.text }}</label>
+            <label @dblclick="beginEdit(item)">{{ item.text }}</label>
             <button class="destroy" @click="removeItem(item)"></button>
           </div>
-        </li>
-        <li data-id="1533501855500" class="completed">
-          <div class="view">
-            <input class="toggle" type="checkbox" />
-            <label>Learn Elm Architecture</label>
-            <button class="destroy"></button>
-          </div>
-        </li>
-        <li data-id="1533501861171" class="">
-          <div class="view">
-            <input class="toggle" type="checkbox" />
-            <label>Build Todo List App</label>
-            <button class="destroy"></button>
-          </div>
-          
-        </li>
-        <li data-id="1533501867123" class="">
-          <div class="view">
-            <input class="toggle" type="checkbox" />
-            <label>Win the Internet!</label>
-            <button class="destroy"></button>
-          </div>
+          <input
+            class="edit"
+            v-model="curEdit.text"
+            @keyup.enter="confirmEdit(item)"
+            @keyup.esc="cancelEdit(item)"
+          />
         </li>
       </ul>
     </section>
@@ -82,13 +69,13 @@
 
 <script>
 import "./assets/css/index.css";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 function useAddItem(todos) {
   const input = ref("");
   function addItem() {
     if (input.value) {
-      todos.value.push({
+      todos.value.unshift({
         complete: false,
         text: input.value,
       });
@@ -109,15 +96,49 @@ function useRemoveItem(list) {
   }
 }
 
+function useEditItem(remove) {
+  const curEdit = reactive({
+    item: null,
+    text: "",
+  });
+  return {
+    curEdit,
+    beginEdit,
+    confirmEdit,
+    cancelEdit,
+  };
+  function beginEdit(item) {
+    curEdit.item = item;
+    curEdit.text = item.text;
+  }
+  function confirmEdit(item) {
+    curEdit.text = (curEdit.text || "").trim();
+    if (curEdit.text) {
+      item.text = curEdit.text;
+    } else {
+      remove(item);
+    }
+    curEdit.item = null;
+  }
+  function cancelEdit() {
+    curEdit.item = null;
+  }
+}
+
 export default {
   name: "App",
   setup() {
-    const todos = ref([]);
+    const todos = ref([
+      { text: "Learn Elm Architecture", complete: false },
+      { text: "Build Todo List App", complete: false },
+      { text: "Win the Internet!", complete: false },
+    ]);
     const { removeItem } = useRemoveItem(todos);
     return {
       todos,
       ...useAddItem(todos),
       removeItem,
+      ...useEditItem(removeItem),
     };
   },
 };
